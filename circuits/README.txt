@@ -1,0 +1,1 @@
+PCB and circuit design was done by Agustín L. Esquivel (github.com/Agustin-Esquivel04)
