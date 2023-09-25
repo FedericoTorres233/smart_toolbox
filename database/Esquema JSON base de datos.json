@@ -1,6 +1,6 @@
 {
   "sector1": {
-    "cajas": {
+    "toolboxes": {
       "12537865": {
         "missing_tools": "",
         "state": false
@@ -10,7 +10,7 @@
         "state": true
       }
     },
-    "guardar": true,
+    "store": true,
     "personas": {
       "jose": {
         "caja": 14537934,

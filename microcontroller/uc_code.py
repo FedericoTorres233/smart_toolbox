@@ -1,8 +1,12 @@
-# Smart Toolbox Esp32 first main program
-#
-# Github: https://github.com/impatrq/722B_smart_toolbox
-#
-# Author: https://github.com/FedericoTorres233
+#########################################################
+#                                                       #
+#      Smart Toolbox microcontroller main program       #
+#                                                       #
+# Github: https://github.com/impatrq/722B_smart_toolbox #
+#                                                       #
+# Author: https://github.com/FedericoTorres233          #
+#                                                       #
+#########################################################
 
 from machine import Pin
 import time
@@ -13,15 +17,11 @@ import urequests as ureq
 WIFI_SSID = ""
 WIFI_PASSWD = ""
 DB_ID = ""
-
-# Workspace
-area_trabajo = "sector1"
+TOOLBOX_ID = "" # eg. 14537934
+WORKSPACE = "" # eg. sector1
 
 # DB Url
 dbURL = f"https://smart-toolbox-{DB_ID}-default-rtdb.firebaseio.com"
-
-# Toolbox Number
-toolbox = "14537934"
 
 # Headers
 HTTP_HEADERS = {"Content-Type": "application/json"}
@@ -37,6 +37,7 @@ c1 = Pin(19,Pin.IN)
 c2 = Pin(18,Pin.IN)
 c3 = Pin(21,Pin.IN)
 
+# Initial states
 alarm.off()
 missing_tools = []
 
@@ -71,6 +72,7 @@ metrica = Tools(15, [1, 1, 1, 1], "Cinta metrica")
 def checkDuplicates(tool):
     return tool in missing_tools
 
+# Checks if the magnetic contacts are close to each other or not
 def checkContacts():
     if not c1.value() and not c2.value() and not c3.value():
         return True
@@ -87,14 +89,14 @@ def connectWifi():
             time.sleep_ms(1000)
 
 
-# REST API get method
+# REST API get function
 def getReq(param):
-    return ureq.get(f"{dbURL}/{area_trabajo}/{param}.json", headers=HTTP_HEADERS).json()
+    return ureq.get(f"{dbURL}/{workspace}/{param}.json", headers=HTTP_HEADERS).json()
 
 
-# REST API patch method
+# REST API patch function
 def patchReq(param, js):
-    return ureq.patch(f"{dbURL}/{area_trabajo}/{param}.json", json=js, headers=HTTP_HEADERS).json()
+    return ureq.patch(f"{dbURL}/{workspace}/{param}.json", json=js, headers=HTTP_HEADERS).json()
 
 
 # This makes the tools iterable
@@ -123,9 +125,9 @@ connectWifi()
 # Main event loop
 while True:
 
-    while not getReq("guardar"):
-        patchReq(f"cajas/{toolbox}", {"missing_tools": "", "state": False})
-        time.sleep(10)  # Waits until the store signal arrives
+    while not getReq("store"):
+        patchReq(f"toolboxes/{TOOLBOX_ID}", {"missing_tools": "", "state": False})
+        time.sleep(10)  # ! Waits until the store signal arrives
 
     for tool in tools:
         if tool.sel[3] == 1:
@@ -136,8 +138,6 @@ while True:
             s2.on()
         if tool.sel[0] == 1:
             s3.on()
-
-        # ! This delay ensures an effective multiplexer switching
 
         if not sig.value():
             # * The tool is not in its place
@@ -158,4 +158,4 @@ while True:
     else:
         alarm.off()
 
-    patchReq(f"cajas/{toolbox}", {"missing_tools": " | ".join(missing_tools), "state": True})
+    patchReq(f"toolboxes/{TOOLBOX_ID}", {"missing_tools": " | ".join(missing_tools), "state": True})
